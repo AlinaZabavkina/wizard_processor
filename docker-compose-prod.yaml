@@ -1,0 +1,27 @@
+version: '3'
+
+services:
+  wizards_processor:
+    container_name: python
+    build: application
+    command: python AppStart.py
+    depends_on:
+      - db
+    env_file:
+      - ./.env.prod
+    network_mode: host
+  db:
+    container_name: postgres
+    image: postgres
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=wizards_prod
+
+
+volumes:
+  postgres_data:
