@@ -6,6 +6,7 @@ from datetime import datetime
 from sqlalchemy import and_
 
 from Classes import Wizards, WizardsSlogans, ShortStory, Session, WizardsClashes
+import DbInitializer
 
 parser = argparse.ArgumentParser()
 
@@ -63,7 +64,7 @@ args = parser.parse_args()
 
 
 def add_wizard():
-    print(f'Adding wizard {args.name}')
+    print(f'Adding wizard {args.name}.')
     with Session() as session:
         wizard_side = args.side
         if wizard_side not in ['dark', 'white']:
@@ -77,6 +78,9 @@ def delete_wizard():
     print(f'Deleting wizard {args.name}')
     with Session() as session:
         wizard_to_delete = session.query(Wizards).filter(Wizards.name == args.name).first()
+        if wizard_to_delete is None:
+            logger.error(f'You are trying to delete non existent wizard {args.name}.')
+            return
         session.delete(wizard_to_delete)
         session.commit()
         logger.info(f'Wizard {args.name} was deleted successfully')
@@ -114,8 +118,21 @@ def add_fight():
     with Session() as session:
         white_wizard = random.choice(session.query(Wizards).filter(and_(Wizards.side == 'white', Wizards.is_alive == True)).all())
         dark_wizard = random.choice(session.query(Wizards).filter(and_(Wizards.side == 'dark', Wizards.is_alive == True)).all())
-        moto_white = random.choice(session.query(WizardsSlogans).filter(WizardsSlogans.hero_id == white_wizard.id).all())
-        moto_dark = random.choice(session.query(WizardsSlogans).filter(WizardsSlogans.hero_id == dark_wizard.id).all())
+
+        white_motos = session.query(WizardsSlogans).filter(WizardsSlogans.hero_id == white_wizard.id).all()
+        if len(white_motos) > 0:
+            moto_white = random.choice(white_motos)
+            moto_white_id = moto_white.moto_id
+        else:
+            moto_white_id = None
+
+        balck_motos = session.query(WizardsSlogans).filter(WizardsSlogans.hero_id == dark_wizard.id).all()
+        if len(balck_motos) > 0:
+            moto_dark = random.choice(balck_motos)
+            moto_dark_id = moto_dark.moto_id
+        else:
+            moto_dark_id = None
+
         winner = 0
         if white_wizard.power > dark_wizard.power:
             winner = 1
@@ -127,7 +144,7 @@ def add_fight():
             logger.info(f'Battle between {white_wizard.name} and {dark_wizard.name} was conducted successfully. {dark_wizard.name} is a winner')
         else:
             logger.error(f"Battle between {white_wizard.name} and {dark_wizard.name} was conducted successfully. It's a draw")
-        session.add(WizardsClashes(hero_1_id=white_wizard.id, hero_2_id=dark_wizard.id,hero_1_moto_id=moto_white.moto_id,hero_2_moto_id=moto_dark.moto_id, winner=winner))
+        session.add(WizardsClashes(hero_1_id=white_wizard.id, hero_2_id=dark_wizard.id,hero_1_moto_id=moto_white_id,hero_2_moto_id=moto_dark_id, winner=winner))
         session.commit()
 
 
@@ -145,8 +162,11 @@ elif function_name == 'add_slogan':
     add_slogan()
 elif function_name == 'add_fight':
     add_fight()
+elif function_name == 'fill_database':
+    init = DbInitializer
+    init.initialize_db()
 else:
-    logger.error('No such function')
+    logger.error('No function provided by flags')
 
 
 

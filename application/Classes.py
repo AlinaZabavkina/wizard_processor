@@ -23,7 +23,9 @@ class Wizards(base):
     is_alive = Column(Boolean)
     power = Column(Integer)
 
+    # one to many
     wizards_slogans = relationship("WizardsSlogans", cascade="all,delete", backref="wizards")
+    # one to one
     short_story = relationship("ShortStory", cascade="all,delete", uselist=False, backref="wizards")
 
     def __repr__(self):
@@ -38,7 +40,7 @@ class WizardsSlogans(base):
     id = Column(Integer, primary_key=True)
     hero_id = Column(Integer, ForeignKey('wizards.id'))
     moto_id = Column(Integer)
-    moto = Column(String(30), unique=True)
+    moto = Column(String(100), unique=True)
 
     def __repr__(self):
         return f'id = {self.id}: hero_id = {self.hero_id}, moto_id = {self.moto_id}, moto = {self.moto}'
@@ -50,7 +52,7 @@ class ShortStory(base):
 
     id = Column(Integer, primary_key=True)
     hero_id = Column(Integer, ForeignKey('wizards.id'), unique=True)
-    story = Column(String(100))
+    story = Column(String(200))
 
     def __repr__(self):
         return f'id = {self.id}: hero_id = {self.hero_id}, story = {self.story}'
@@ -60,10 +62,10 @@ class WizardsClashes(base):
     __tablename__ = 'wizards_clashes'
     __table_args__ = {'extend_existing': True}
     id = Column(Integer, primary_key=True)
-    hero_1_id = Column(Integer,ForeignKey('wizards.id'))
-    hero_1_moto_id = Column(Integer, ForeignKey('wizards_slogans.id'))
-    hero_2_id = Column(Integer,ForeignKey('wizards.id'))
-    hero_2_moto_id = Column(Integer, ForeignKey('wizards_slogans.id'))
+    hero_1_id = Column(Integer,ForeignKey('wizards.id',ondelete='SET NULL'), nullable=True)
+    hero_1_moto_id = Column(Integer, ForeignKey('wizards_slogans.id',ondelete='SET NULL'), nullable=True)
+    hero_2_id = Column(Integer,ForeignKey('wizards.id',ondelete='SET NULL'), nullable=True)
+    hero_2_moto_id = Column(Integer, ForeignKey('wizards_slogans.id',ondelete='SET NULL'), nullable=True)
     winner = Column(Integer)
 
     def __repr__(self):
