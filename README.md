@@ -63,3 +63,5 @@ Ways to improve:
 2) I would develop some better interface for functions
 3) Now a wizard with more power wins a battle, it'd be better if there is some random chance least powered wizard to win
 ```
+
+The programm was tested on Docker version 20.10.8, build 3967b7d on MacOS 12.0.1 (21A559)
